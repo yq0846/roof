@@ -19,29 +19,36 @@ public class Notice extends BaseEntity {
     private String title;
 
     @Column(length = 8000)
-    private String details;
+    private String contents;
 
-    private Long viewCount = 0L;
+    @Enumerated(EnumType.STRING)
+    private NoticeCategory category;
+
+    private Long viewCount;
 
     @Builder
     public Notice(
             Long id,
             String title,
-            String details,
+            String contents,
+            NoticeCategory category,
             Long viewCount
     ) {
         this.id = id;
         this.title = title;
-        this.details = details;
+        this.contents = contents;
+        this.category = category;
         this.viewCount = viewCount;
     }
 
     public void update(
             String title,
-            String details
+            String details,
+            NoticeCategory category
     ) {
         this.title = title;
-        this.details = details;
+        this.contents = details;
+        this.category = category;
     }
 
     public void increaseViewCount() {

@@ -1,12 +1,15 @@
 package com.side.jiboong.presentation.api;
 
+import com.side.jiboong.common.util.Page;
 import com.side.jiboong.domain.notice.NoticeReadService;
 import com.side.jiboong.domain.notice.NoticeWriteService;
-import com.side.jiboong.domain.notice.dto.NoticeCondition;
+import com.side.jiboong.domain.notice.request.NoticeCondition;
 import com.side.jiboong.presentation.dto.NoticeDto;
 import com.side.jiboong.presentation.dto.SearchDto;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -18,21 +21,25 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notices")
+@Tag(name = "Notice API", description = "공지사항 API")
 public class NoticeRestController {
     private final NoticeReadService noticeReadService;
     private final NoticeWriteService noticeWriteService;
 
     @GetMapping
     @Operation(summary = "전체조회")
-    public ResponseEntity<List<NoticeDto.Items>> getAllBy(
-            @PageableDefault(page = 0, size = 100) Pageable pageable,
-            SearchDto.NoticeOptions option
+    public ResponseEntity<Page<NoticeDto.Items>> getAllBy(
+            @PageableDefault(page = 0, size = 20) Pageable pageable,
+            @ParameterObject SearchDto.NoticeOptions option
     ) {
         NoticeCondition condition = option.toNoticeCondition(pageable);
-        List<NoticeDto.Items> notices = noticeReadService.findByAll().stream()
+        List<NoticeDto.Items> notices = noticeReadService.findByAll(condition).stream()
                 .map(NoticeDto.Items::from)
                 .toList();
-        return ResponseEntity.status(HttpStatus.OK).body(notices);
+        int count = noticeReadService.countBy(condition);
+
+        Page<NoticeDto.Items> response = Page.from(pageable, count, notices);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @GetMapping("/{notice-id}")

@@ -1,8 +1,9 @@
 package com.side.jiboong.domain.notice;
 
 import com.side.jiboong.common.annotation.ReadService;
-import com.side.jiboong.domain.notice.dto.NoticeInfo;
-import com.side.jiboong.domain.notice.dto.NoticeItems;
+import com.side.jiboong.domain.notice.request.NoticeCondition;
+import com.side.jiboong.domain.notice.response.NoticeInfo;
+import com.side.jiboong.domain.notice.response.NoticeItems;
 import com.side.jiboong.domain.notice.entity.Notice;
 import com.side.jiboong.infrastructure.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +16,14 @@ import java.util.NoSuchElementException;
 public class NoticeReadService {
     private final NoticeRepository noticeRepository;
 
-    public List<NoticeItems> findByAll() {
-        return noticeRepository.findAll().stream()
+    public List<NoticeItems> findByAll(NoticeCondition condition) {
+        return noticeRepository.findAllBy(condition).stream()
                 .map(NoticeItems::from)
                 .toList();
+    }
+
+    public int countBy(NoticeCondition condition) {
+        return noticeRepository.countBy(condition);
     }
 
     public NoticeInfo findById(Long id) {

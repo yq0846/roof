@@ -1,8 +1,8 @@
 package com.side.jiboong.domain.notice;
 
 import com.side.jiboong.common.annotation.WriteService;
-import com.side.jiboong.domain.notice.dto.NoticeCreate;
-import com.side.jiboong.domain.notice.dto.NoticeUpdate;
+import com.side.jiboong.domain.notice.request.NoticeCreate;
+import com.side.jiboong.domain.notice.request.NoticeUpdate;
 import com.side.jiboong.domain.notice.entity.Notice;
 import com.side.jiboong.infrastructure.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class NoticeWriteService {
     public void update(Long id, NoticeUpdate update) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Notice not found."));
-        notice.update(update.title(), update.details());
+        notice.update(update.title(), update.contents(), update.category());
     }
 
     public void delete(List<Long> idList) {

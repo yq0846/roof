@@ -1,9 +1,12 @@
 package com.side.jiboong.presentation.api;
 
+import com.side.jiboong.common.component.FileManager;
+import com.side.jiboong.common.constant.FilePath;
 import com.side.jiboong.common.util.Page;
 import com.side.jiboong.domain.notice.NoticeReadService;
 import com.side.jiboong.domain.notice.NoticeWriteService;
 import com.side.jiboong.domain.notice.request.NoticeCondition;
+import com.side.jiboong.presentation.dto.FileDto;
 import com.side.jiboong.presentation.dto.NoticeDto;
 import com.side.jiboong.presentation.dto.SearchDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,8 +16,10 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -25,6 +30,7 @@ import java.util.List;
 public class NoticeRestController {
     private final NoticeReadService noticeReadService;
     private final NoticeWriteService noticeWriteService;
+    private final FileManager fileManager;
 
     @GetMapping
     @Operation(summary = "전체조회")
@@ -74,5 +80,18 @@ public class NoticeRestController {
     public ResponseEntity<Void> delete(@RequestBody NoticeDto.Delete delete) {
         noticeWriteService.delete(delete.idList());
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "파일 첨부", description = """
+        파일을 저장합니다.
+    """)
+    public ResponseEntity<FileDto.FileResponse> fileSave(
+            @RequestPart MultipartFile noticeFile
+    ) {
+        FileDto.FileRequest fileRequest = FileDto.FileRequest.create(noticeFile, FilePath.NOTICE);
+        FileDto.FileResponse fileResponse = fileManager.saveFile(fileRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(fileResponse);
     }
 }

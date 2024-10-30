@@ -1,5 +1,6 @@
 server:
   port: 17010
+
 spring:
   application:
     name: jiboong
@@ -19,3 +20,17 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+
+springdoc:
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  use-fqn: true
+  swagger-ui:
+    display-request-duration: true
+    defaultModelsExpandDepth: 10
+    defaultModelExpandDepth: 10
+    tags-sorter: alpha
+
+path:
+  web-resources:
+    file: ${PATH_WEB_RESOURCES_FILE:}

@@ -11,3 +11,22 @@ services:
       POSTGRES_PASSWORD: "${DB_PASSWORD}"
     ports:
       - "${DB_PORT}:5432"
+    networks:
+      - jiboong-network
+    volumes:
+      - ./.var/lib/postgresql/data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: jiboong-redis
+    restart: always
+    ports:
+      - "17200:6379"
+    networks:
+      - jiboong-network
+    volumes:
+      - ./.var/lib/redis/data:/data
+
+networks:
+  jiboong-network:
+    driver: bridge

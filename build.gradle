@@ -31,6 +31,9 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
     testImplementation 'com.h2database:h2'
 
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // docker-compose
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
 

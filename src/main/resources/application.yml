@@ -24,6 +24,16 @@ spring:
       hibernate:
         format_sql: true
         show_sql: true
+        default_schema: roof
+
+  security:
+    jwt:
+      enabled: true
+      subject: ${JWT_SUBJECT}
+      access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRES_IN:PT15M}   # PT15M = 15 minutes
+      refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRES_IN:P15D}  # P15D  = 15 days
+      public-key: ${JWT_PUBLIC_KEY}
+      private-key: ${JWT_PRIVATE_KEY}
 
 springdoc:
   default-consumes-media-type: application/json

@@ -45,6 +45,9 @@ dependencies {
 
     // swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+    // jwt
+    implementation 'com.auth0:java-jwt:4.4.0'
 }
 
 // querydsl 설정

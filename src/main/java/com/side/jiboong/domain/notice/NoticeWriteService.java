@@ -4,7 +4,7 @@ import com.side.jiboong.common.annotation.WriteService;
 import com.side.jiboong.domain.notice.request.NoticeCreate;
 import com.side.jiboong.domain.notice.request.NoticeUpdate;
 import com.side.jiboong.domain.notice.entity.Notice;
-import com.side.jiboong.infrastructure.NoticeRepository;
+import com.side.jiboong.infrastructure.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

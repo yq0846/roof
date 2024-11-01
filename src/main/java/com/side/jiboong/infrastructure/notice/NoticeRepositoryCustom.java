@@ -1,4 +1,4 @@
-package com.side.jiboong.infrastructure;
+package com.side.jiboong.infrastructure.notice;
 
 import com.side.jiboong.domain.notice.request.NoticeCondition;
 import com.side.jiboong.domain.notice.entity.Notice;

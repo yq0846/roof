@@ -5,7 +5,7 @@ import com.side.jiboong.domain.notice.request.NoticeCondition;
 import com.side.jiboong.domain.notice.response.NoticeInfo;
 import com.side.jiboong.domain.notice.response.NoticeItems;
 import com.side.jiboong.domain.notice.entity.Notice;
-import com.side.jiboong.infrastructure.NoticeRepository;
+import com.side.jiboong.infrastructure.notice.NoticeRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;

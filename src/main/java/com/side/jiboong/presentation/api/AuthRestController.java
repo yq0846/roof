@@ -2,6 +2,7 @@ package com.side.jiboong.presentation.api;
 
 import com.side.jiboong.domain.user.UserWriteService;
 import com.side.jiboong.domain.user.request.SignInCredentials;
+import com.side.jiboong.domain.user.request.UserJoin;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,5 +28,16 @@ public class AuthRestController {
     public ResponseEntity<AuthenticationTokens> signIn(@RequestBody SignInCredentials credentials) {
         AuthenticationTokens tokens = userWriteService.signIn(credentials);
         return ResponseEntity.status(HttpStatus.OK).body(tokens);
+    }
+
+    @PostMapping("/signup")
+    @Operation(summary = "회원가입", description = """
+        회원가입을 진행합니다.
+    """)
+    public ResponseEntity<String> signIn(
+            @RequestBody UserJoin signup
+    ) {
+        userWriteService.join(signup);
+        return ResponseEntity.status(HttpStatus.CREATED).body("User signed up successfully");
     }
 }

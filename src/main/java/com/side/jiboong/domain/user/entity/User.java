@@ -1,7 +1,9 @@
 package com.side.jiboong.domain.user.entity;
 
 import com.side.jiboong.domain.BaseEntity;
+import com.side.jiboong.domain.user.UserRoleType;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -38,6 +40,7 @@ public class User extends BaseEntity {
     @OrderBy("roleType ASC")
     private final List<UsersAuthorities> authorities = new ArrayList<>();
 
+    @Builder
     public User(
             String username,
             String password,
@@ -48,6 +51,7 @@ public class User extends BaseEntity {
         this.password = password;
         this.lastLogin = lastLogin;
         this.loginCount = loginCount;
+        authorities.add(UsersAuthorities.of(this, UserRoleType.USER));
     }
 
     public void login() {

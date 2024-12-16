@@ -31,4 +31,11 @@ public class UsersAuthorities extends BaseEntity {
         this.roleType = roleType;
         this.user = user;
     }
+
+    public static UsersAuthorities of(User user, UserRoleType roleType) {
+        return UsersAuthorities.builder()
+                .user(user)
+                .roleType(roleType)
+                .build();
+    }
 }

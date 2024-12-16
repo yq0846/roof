@@ -1,6 +1,7 @@
 package com.side.jiboong.presentation.api;
 
 import com.side.jiboong.domain.user.UserWriteService;
+import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
 import com.side.jiboong.domain.user.request.UserJoin;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
@@ -21,15 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthRestController {
     private final UserWriteService userWriteService;
 
-    @PostMapping("/sign-in")
-    @Operation(summary = "JWT 로그인", description = """
-        로그인을 하고 AccessToken 과 RefreshToken 을 발급받습니다.
-    """)
-    public ResponseEntity<AuthenticationTokens> signIn(@RequestBody SignInCredentials credentials) {
-        AuthenticationTokens tokens = userWriteService.signIn(credentials);
-        return ResponseEntity.status(HttpStatus.OK).body(tokens);
-    }
-
     @PostMapping("/signup")
     @Operation(summary = "회원가입", description = """
         회원가입을 진행합니다.
@@ -39,5 +31,28 @@ public class AuthRestController {
     ) {
         userWriteService.join(signup);
         return ResponseEntity.status(HttpStatus.CREATED).body("User signed up successfully");
+    }
+
+    @PostMapping("/sign-in")
+    @Operation(summary = "JWT 로그인", description = """
+        AccessToken 과 RefreshToken 을 발급받습니다.
+    """)
+    public ResponseEntity<AuthenticationTokens> signIn(
+            @RequestBody SignInCredentials credentials
+    ) {
+        AuthenticationTokens tokens = userWriteService.signIn(credentials);
+        return ResponseEntity.status(HttpStatus.OK).body(tokens);
+    }
+
+    @PostMapping("/refresh-token")
+    @Operation(summary = "토큰 갱신", description = """
+        RefreshToken 을 이용해 AccessToken 을 갱신합니다.
+    """)
+    public ResponseEntity<AuthenticationTokens> refreshToken(
+            @RequestBody RefreshTokenRequest refreshTokenRequest
+    ) {
+        var signInResponse = userWriteService.refreshToken(refreshTokenRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(signInResponse);
     }
 }

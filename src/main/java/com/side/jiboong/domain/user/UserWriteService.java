@@ -3,10 +3,12 @@ package com.side.jiboong.domain.user;
 import com.side.jiboong.common.annotation.WriteService;
 import com.side.jiboong.common.component.RedisCacheManager;
 import com.side.jiboong.common.config.properties.JwtProperties;
+import com.side.jiboong.common.exception.UnauthorizedException;
 import com.side.jiboong.common.exception.UserAlreadyExistsException;
 import com.side.jiboong.common.security.JwtProvider;
 import com.side.jiboong.common.security.UserAuth;
 import com.side.jiboong.domain.user.entity.User;
+import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
 import com.side.jiboong.domain.user.request.UserJoin;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
@@ -17,6 +19,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.util.StringUtils;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -34,8 +37,27 @@ public class UserWriteService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final BCryptPasswordEncoder encoder;
 
+    public User join(UserJoin userJoin) {
+        if (!isValidEmail(userJoin.username())) {
+            throw new IllegalArgumentException("invalid email");
+        }
+        if (!isValidPassword(userJoin.password())) {
+            throw new IllegalArgumentException("invalid password");
+        }
+
+        userRepository.findByUsername(userJoin.username())
+                .ifPresent((user) -> {
+                    throw new UserAlreadyExistsException("Username " + user.getUsername() + " already exists.");
+                });
+
+        User newUser = userJoin.toUser(encoder::encode);
+        userRepository.save(newUser);
+
+        return newUser;
+    }
+
     public AuthenticationTokens signIn(SignInCredentials credentials) {
-        User user = userRepository.findByUsername(credentials.username())
+        userRepository.findByUsername(credentials.username())
                 .orElseThrow(() -> new NoSuchElementException("회원정보를 찾을 수 없습니다."));
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(credentials.username(), credentials.password());
@@ -43,6 +65,24 @@ public class UserWriteService {
         UserAuth userAuth = (UserAuth) authenticate.getPrincipal();
 
         return createAuthToken(userAuth, userAuth.getUsername());
+    }
+
+    public AuthenticationTokens refreshToken(RefreshTokenRequest request) {
+        if(!StringUtils.hasText(request.refreshToken())) {
+            throw new UnauthorizedException("Refresh token cannot be empty or null");
+        }
+
+        String storedUsername = redisCacheManager.getValue(request.refreshToken());
+
+        if(storedUsername == null) {
+            throw new UnauthorizedException("Invalid or expired refresh token has been provided");
+        }
+
+        User user = userRepository.findByUsername(storedUsername)
+                .orElseThrow(() -> new NoSuchElementException("회원정보를 찾을 수 없습니다."));
+        UserAuth userAuth = UserAuth.from(user);
+
+        return createAuthToken(userAuth, user.getUsername());
     }
 
     private AuthenticationTokens createAuthToken(UserAuth userAuth, String username) {
@@ -66,25 +106,6 @@ public class UserWriteService {
                 .refreshTokenExpiresIn(refreshTokenExpiresIn)
                 .roles(roles)
                 .build();
-    }
-
-    public User join(UserJoin userJoin) {
-        if (!isValidEmail(userJoin.username())) {
-            throw new IllegalArgumentException("invalid email");
-        }
-        if (!isValidPassword(userJoin.password())) {
-            throw new IllegalArgumentException("invalid password");
-        }
-
-        userRepository.findByUsername(userJoin.username())
-                .ifPresent((user) -> {
-                    throw new UserAlreadyExistsException("Username " + user.getUsername() + " already exists.");
-                });
-
-        User newUser = userJoin.toUser(encoder::encode);
-        userRepository.save(newUser);
-
-        return newUser;
     }
 
     private static boolean isValidEmail(String username) {

@@ -1,11 +1,13 @@
 package com.side.jiboong.presentation.api;
 
+import com.side.jiboong.common.annotation.Authenticated;
 import com.side.jiboong.common.component.FileManager;
 import com.side.jiboong.common.constant.FilePath;
 import com.side.jiboong.common.util.Page;
 import com.side.jiboong.domain.notice.NoticeReadService;
 import com.side.jiboong.domain.notice.NoticeWriteService;
 import com.side.jiboong.domain.notice.request.NoticeCondition;
+import com.side.jiboong.domain.user.UserRoleType;
 import com.side.jiboong.presentation.dto.FileDto;
 import com.side.jiboong.presentation.dto.NoticeDto;
 import com.side.jiboong.presentation.dto.SearchDto;
@@ -48,6 +50,7 @@ public class NoticeRestController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @Authenticated
     @GetMapping("/{notice-id}")
     @Operation(summary = "상세조회")
     public ResponseEntity<NoticeDto.Info> getById(
@@ -58,6 +61,7 @@ public class NoticeRestController {
         return ResponseEntity.status(HttpStatus.OK).body(notice);
     }
 
+    @Authenticated(userType = UserRoleType.ADMIN)
     @PostMapping
     @Operation(summary = "생성")
     public ResponseEntity<Void> create(@RequestBody NoticeDto.Create create) {
@@ -65,6 +69,7 @@ public class NoticeRestController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @Authenticated(userType = UserRoleType.ADMIN)
     @PutMapping("/{notice-id}")
     @Operation(summary = "수정")
     public ResponseEntity<Void> update(
@@ -75,6 +80,7 @@ public class NoticeRestController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @Authenticated(userType = UserRoleType.ADMIN)
     @PostMapping("/delete")
     @Operation(summary = "삭제")
     public ResponseEntity<Void> delete(@RequestBody NoticeDto.Delete delete) {
@@ -82,6 +88,7 @@ public class NoticeRestController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @Authenticated(userType = UserRoleType.ADMIN)
     @PostMapping(value = "/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "파일 첨부", description = """
         파일을 저장합니다.

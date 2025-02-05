@@ -1,5 +1,6 @@
 package com.side.jiboong.common.exception.advisor;
 
+import com.side.jiboong.common.exception.MailSendException;
 import com.side.jiboong.common.exception.NotFoundException;
 import com.side.jiboong.common.exception.UnauthorizedException;
 import com.side.jiboong.presentation.ApiResponse;
@@ -52,6 +53,11 @@ public class RestControllerAdvisor extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentialsException(BadCredentialsException e) {
         return createResponseEntity(e, HttpStatus.UNAUTHORIZED, "Bad credentials");
+    }
+
+    @ExceptionHandler(MailSendException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMailSendException(MailSendException e) {
+        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
     private <T> ResponseEntity<T> createResponseEntity(Exception e, HttpStatusCode statusCode, String message) {

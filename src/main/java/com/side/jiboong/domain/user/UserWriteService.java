@@ -1,6 +1,7 @@
 package com.side.jiboong.domain.user;
 
 import com.side.jiboong.common.annotation.WriteService;
+import com.side.jiboong.common.component.MailSender;
 import com.side.jiboong.common.component.RedisCacheManager;
 import com.side.jiboong.common.config.properties.JwtProperties;
 import com.side.jiboong.common.exception.UnauthorizedException;
@@ -36,6 +37,7 @@ public class UserWriteService {
     private final RedisCacheManager redisCacheManager;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final BCryptPasswordEncoder encoder;
+    private final MailSender mailSender;
 
     public User join(UserJoin userJoin) {
         if (!isValidEmail(userJoin.username())) {
@@ -65,6 +67,14 @@ public class UserWriteService {
         UserAuth userAuth = (UserAuth) authenticate.getPrincipal();
 
         return createAuthToken(userAuth, userAuth.getUsername());
+    }
+
+    public void sandEmail(String email) {
+        mailSender.send(
+                email,
+                "test subject",
+                "test content"
+        );
     }
 
     public AuthenticationTokens refreshToken(RefreshTokenRequest request) {

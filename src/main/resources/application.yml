@@ -25,6 +25,19 @@ spring:
         format_sql: true
         show_sql: true
         default_schema: roof
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+        mime:
+          charset: UTF-8
 
   security:
     jwt:

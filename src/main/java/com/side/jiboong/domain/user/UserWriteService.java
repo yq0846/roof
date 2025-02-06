@@ -3,6 +3,7 @@ package com.side.jiboong.domain.user;
 import com.side.jiboong.common.annotation.WriteService;
 import com.side.jiboong.common.component.MailSender;
 import com.side.jiboong.common.component.RedisCacheManager;
+import com.side.jiboong.common.config.properties.ExpirationProperties;
 import com.side.jiboong.common.config.properties.JwtProperties;
 import com.side.jiboong.common.exception.UnauthorizedException;
 import com.side.jiboong.common.exception.UserAlreadyExistsException;
@@ -19,13 +20,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.UUID;
 
 @WriteService
 @RequiredArgsConstructor
@@ -38,6 +44,7 @@ public class UserWriteService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final BCryptPasswordEncoder encoder;
     private final MailSender mailSender;
+    private final ExpirationProperties expirationProperties;
 
     public User join(UserJoin userJoin) {
         if (!isValidEmail(userJoin.username())) {
@@ -69,12 +76,37 @@ public class UserWriteService {
         return createAuthToken(userAuth, userAuth.getUsername());
     }
 
-    public void sandEmail(String email) {
+    public void sendPasswordResetCode(String username) {
+
+        userRepository.findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("회원정보를 찾을 수 없습니다."));
+
+        String resetCode = generateResetCode(username);
+
+        redisCacheManager.setValue(resetCode, username, expirationProperties.emailVerification());
+
         mailSender.send(
-                email,
-                "test subject",
-                "test content"
+                username,
+                "Password Reset Code",
+                resetCode
         );
+    }
+
+    public void resetPassword(String resetCode, String newPassword) {
+        String email = redisCacheManager.getValue(resetCode);
+        if (!StringUtils.hasText(email)) {
+            throw new NoSuchElementException("invalid reset code");
+        }
+
+        redisCacheManager.deleteValue(resetCode);
+
+        User findUser = userRepository.findByUsername(email)
+                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+
+        String encodedPassword = encoder.encode(newPassword);
+
+        findUser.resetPassword(encodedPassword);
+        userRepository.save(findUser);
     }
 
     public AuthenticationTokens refreshToken(RefreshTokenRequest request) {
@@ -116,6 +148,32 @@ public class UserWriteService {
                 .refreshTokenExpiresIn(refreshTokenExpiresIn)
                 .roles(roles)
                 .build();
+    }
+
+    private String generateResetCode(String email) {
+        UUID randomUUID = UUID.randomUUID();
+        String input = randomUUID + email;
+
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
+            byte[] hash = messageDigest.digest(input.getBytes(StandardCharsets.UTF_8));
+
+            return convertToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String convertToString(byte[] hash) {
+        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        for (byte bt : hash) {
+            String hex = Integer.toHexString(0xff & bt);
+            if (hex.length() == 1) {
+                hexString.append('0');
+            }
+            hexString.append(hex);
+        }
+        return hexString.toString();
     }
 
     private static boolean isValidEmail(String username) {

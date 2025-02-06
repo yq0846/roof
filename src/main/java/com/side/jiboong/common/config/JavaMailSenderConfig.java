@@ -1,6 +1,6 @@
 package com.side.jiboong.common.config;
 
-import lombok.extern.slf4j.Slf4j;
+import com.side.jiboong.common.config.properties.ExpirationProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
@@ -13,9 +13,8 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import java.util.Map;
 import java.util.Properties;
 
-@Slf4j
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({ MailProperties.class })
+@EnableConfigurationProperties({ MailProperties.class, ExpirationProperties.class })
 @ConditionalOnProperty(prefix = "spring.mail", name = "host")
 class JavaMailSenderConfig {
 
@@ -24,22 +23,6 @@ class JavaMailSenderConfig {
     JavaMailSenderImpl mailSender(MailProperties properties) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         applyProperties(properties, sender);
-        log.info("""
-JavaMailSenderImpl bean created with the following properties:
-                host: {}
-                port: {}
-                username: {}
-                protocol: {}
-                defaultEncoding: {}
-                properties: {}
-                """,
-                sender.getHost(),
-                sender.getPort(),
-                sender.getUsername(),
-                sender.getProtocol(),
-                sender.getDefaultEncoding(),
-                sender.getJavaMailProperties()
-        );
         return sender;
     }
 

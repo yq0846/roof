@@ -58,4 +58,8 @@ public class User extends BaseEntity {
         this.lastLogin = ZonedDateTime.now();
         this.loginCount++;
     }
+
+    public void resetPassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

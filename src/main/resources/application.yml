@@ -38,6 +38,8 @@ spring:
             enable: true
         mime:
           charset: UTF-8
+    expiration:
+      email-verification: ${MAIL_VERIFICATION_EXPIRES_IN:PT5M}        # PT5M = 5 minutes
 
   security:
     jwt:

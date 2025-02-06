@@ -5,15 +5,13 @@ import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
 import com.side.jiboong.domain.user.request.UserJoin;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
+import com.side.jiboong.presentation.dto.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -54,5 +52,25 @@ public class AuthRestController {
         var signInResponse = userWriteService.refreshToken(refreshTokenRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(signInResponse);
+    }
+
+    @PostMapping("/send-password-reset-code")
+    @Operation(summary = "비밀번호 재설정 코드 전송", description = """
+        이메일로 비밀번호 재설정 코드를 전송합니다.
+    """)
+    public void sendPasswordResetCode(
+            @RequestBody UserDto.EmailInfo emailInfo
+    ) {
+        userWriteService.sendPasswordResetCode(emailInfo.email());
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "비밀번호 재설정", description = "비밀번호를 재설정하고 DB에 재설정된 비밀번호로 변경합니다.")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam("resetCode") String resetCode,
+            @RequestBody UserDto.UpdateUserPasswordInfo info
+    ) {
+        userWriteService.resetPassword(resetCode, info.newPassword());
+        return ResponseEntity.status(HttpStatus.OK).body("Password reset is complete.");
     }
 }

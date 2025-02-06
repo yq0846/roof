@@ -19,4 +19,8 @@ public class RedisCacheManager {
     public void setValue(String key, String value, Duration timeout) {
         redisTemplate.opsForValue().set(key, value, timeout);
     }
+
+    public void deleteValue(String key) {
+        redisTemplate.delete(key);
+    }
 }

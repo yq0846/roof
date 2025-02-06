@@ -1,5 +1,6 @@
 package com.side.jiboong.presentation.api;
 
+import com.side.jiboong.domain.user.UserReadService;
 import com.side.jiboong.domain.user.UserWriteService;
 import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
@@ -18,7 +19,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @Tag(name = "Authentication API", description = "인증 API")
 public class AuthRestController {
+    private final UserReadService userReadService;
     private final UserWriteService userWriteService;
+
+    @Operation(summary = "회원가입 인증코드 발송", description = """
+        이메일로 인증코드를 발송합니다,
+    """)
+    @PostMapping("/signup/send-email")
+    public ResponseEntity<Void> sendEmail(
+            @RequestBody UserDto.EmailInfo emailInfo
+    ) {
+        userReadService.validateEmailDuplication(emailInfo.email());
+        userWriteService.sendVerificationCode(emailInfo.email());
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @Operation(summary = "회원가입 인증코드 검증", description = """
+        인증코드가 올바른지 검증합니다,
+    """)
+    @PostMapping("/signup/verify-email")
+    public ResponseEntity<String> verifyEmail(
+            @RequestBody UserDto.EmailVerification emailVerification
+    ) {
+        userReadService.validateVerificationCode(emailVerification.username(), emailVerification.verificationCode());
+        return ResponseEntity.status(HttpStatus.OK).body("Email verified successfully");
+    }
 
     @PostMapping("/signup")
     @Operation(summary = "회원가입", description = """
@@ -50,7 +75,6 @@ public class AuthRestController {
             @RequestBody RefreshTokenRequest refreshTokenRequest
     ) {
         var signInResponse = userWriteService.refreshToken(refreshTokenRequest);
-
         return ResponseEntity.status(HttpStatus.OK).body(signInResponse);
     }
 
@@ -58,10 +82,11 @@ public class AuthRestController {
     @Operation(summary = "비밀번호 재설정 코드 전송", description = """
         이메일로 비밀번호 재설정 코드를 전송합니다.
     """)
-    public void sendPasswordResetCode(
+    public ResponseEntity<Void> sendPasswordResetCode(
             @RequestBody UserDto.EmailInfo emailInfo
     ) {
         userWriteService.sendPasswordResetCode(emailInfo.email());
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/reset-password")

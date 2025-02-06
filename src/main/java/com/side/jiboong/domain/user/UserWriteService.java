@@ -28,10 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @WriteService
 @RequiredArgsConstructor
@@ -61,6 +58,8 @@ public class UserWriteService {
 
         User newUser = userJoin.toUser(encoder::encode);
         userRepository.save(newUser);
+
+        deleteVerificationCode(userJoin.username(), userJoin.verificationCode());
 
         return newUser;
     }
@@ -148,6 +147,38 @@ public class UserWriteService {
                 .refreshTokenExpiresIn(refreshTokenExpiresIn)
                 .roles(roles)
                 .build();
+    }
+
+    public void sendVerificationCode(String email) {
+        String verificationCode = generateVerificationCode();
+
+        redisCacheManager.setValue(
+                "verification-code::" + email,
+                verificationCode,
+                expirationProperties.emailVerification()
+        );
+
+        mailSender.send(
+                email,
+                "Verification Code",
+                verificationCode
+        );
+    }
+
+    private void deleteVerificationCode(String email, String verificationCode) {
+        String storedVerificationCode = redisCacheManager.getValue("verification-code::" + email);
+
+        if (!Objects.equals(storedVerificationCode, verificationCode)) {
+            throw new NoSuchElementException("Invalid or expired verification code");
+        }
+
+        redisCacheManager.deleteValue("verification-code::" + email);
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int number = random.nextInt(1000000); // 0부터 999999까지의 난수 생성
+        return String.format("%06d", number); // 6자리로 포맷팅
     }
 
     private String generateResetCode(String email) {

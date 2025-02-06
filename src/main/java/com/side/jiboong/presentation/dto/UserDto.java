@@ -8,6 +8,11 @@ public class UserDto {
             String email
     ) {}
 
+    public record EmailVerification(
+            String username,
+            String verificationCode
+    ) {}
+
     public record UpdateUserPasswordInfo(
             @Schema(description = "새로운 비밀번호")
             String newPassword

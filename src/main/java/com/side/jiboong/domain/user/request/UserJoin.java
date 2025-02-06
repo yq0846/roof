@@ -6,7 +6,8 @@ import java.util.function.Function;
 
 public record UserJoin(
         String username,
-        String password
+        String password,
+        String verificationCode
 ){
     public User toUser(Function<String, String> encoder) {
         return User.builder()

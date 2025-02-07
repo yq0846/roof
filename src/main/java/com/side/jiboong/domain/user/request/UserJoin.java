@@ -1,9 +1,11 @@
 package com.side.jiboong.domain.user.request;
 
 import com.side.jiboong.domain.user.entity.User;
+import lombok.Builder;
 
 import java.util.function.Function;
 
+@Builder
 public record UserJoin(
         String username,
         String password,

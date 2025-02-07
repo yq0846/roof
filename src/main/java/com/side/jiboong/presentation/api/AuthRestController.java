@@ -50,9 +50,9 @@ public class AuthRestController {
         회원가입을 진행합니다.
     """)
     public ResponseEntity<String> signIn(
-            @RequestBody UserJoin signup
+            @RequestBody UserDto.Signup signup
     ) {
-        userWriteService.join(signup);
+        userWriteService.join(signup.toUserJoin());
         return ResponseEntity.status(HttpStatus.CREATED).body("User signed up successfully");
     }
 

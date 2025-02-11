@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -28,6 +29,12 @@ public class UserReadService {
         return userRepository.findByUsername(username)
                 .map(UserAuth::from)
                 .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
+    }
+
+    public List<Long> getAllUserIdList() {
+        return userRepository.findAll().stream()
+                .map(User::getId)
+                .toList();
     }
 
     public void validateEmailDuplication(String email) {

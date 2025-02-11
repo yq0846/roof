@@ -7,10 +7,12 @@ import com.side.jiboong.common.util.Page;
 import com.side.jiboong.domain.notice.NoticeReadService;
 import com.side.jiboong.domain.notice.NoticeWriteService;
 import com.side.jiboong.domain.notice.request.NoticeCondition;
+import com.side.jiboong.domain.notice.response.NoticeAlarm;
 import com.side.jiboong.domain.user.UserRoleType;
 import com.side.jiboong.presentation.dto.FileDto;
 import com.side.jiboong.presentation.dto.NoticeDto;
 import com.side.jiboong.presentation.dto.SearchDto;
+import com.side.jiboong.presentation.usecase.AlarmUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.util.List;
 
 @RestController
@@ -32,6 +35,7 @@ import java.util.List;
 public class NoticeRestController {
     private final NoticeReadService noticeReadService;
     private final NoticeWriteService noticeWriteService;
+    private final AlarmUseCase alarmUseCase;
     private final FileManager fileManager;
 
     @GetMapping
@@ -65,7 +69,8 @@ public class NoticeRestController {
     @PostMapping
     @Operation(summary = "생성")
     public ResponseEntity<Void> create(@RequestBody NoticeDto.Create create) {
-        noticeWriteService.create(create.toNoticeCreate());
+        NoticeAlarm noticeAlarm = NoticeAlarm.from(noticeWriteService.create(create.toNoticeCreate()));
+        alarmUseCase.register(noticeAlarm, Duration.ofDays(3));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

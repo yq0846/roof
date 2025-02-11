@@ -20,6 +20,10 @@ public class RedisCacheManager {
         redisTemplate.opsForValue().set(key, value, timeout);
     }
 
+    public void setObjectValue(String key, Object value, Duration timeout) {
+        redisTemplate.opsForValue().set(key, value, timeout);
+    }
+
     public void deleteValue(String key) {
         redisTemplate.delete(key);
     }

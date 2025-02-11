@@ -15,8 +15,8 @@ import java.util.NoSuchElementException;
 public class NoticeWriteService {
     private final NoticeRepository noticeRepository;
 
-    public void create(NoticeCreate create) {
-        noticeRepository.save(create.toNotice());
+    public Notice create(NoticeCreate create) {
+        return noticeRepository.save(create.toNotice());
     }
 
     public void update(Long id, NoticeUpdate update) {

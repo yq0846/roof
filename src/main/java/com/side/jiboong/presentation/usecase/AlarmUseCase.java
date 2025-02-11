@@ -17,7 +17,7 @@ public class AlarmUseCase {
 
     public void register(AlarmDto alarmDto, Duration duration) {
         if (duration == null) {
-            throw new IllegalArgumentException("Duration must not be null");
+            throw new IllegalArgumentException("기간을 입력바랍니다.");
         }
 
         List<Long> userIdList = userReadService.getAllUserIdList();
@@ -32,7 +32,7 @@ public class AlarmUseCase {
                 break;
 
             default:
-                throw new IllegalArgumentException("Invalid Alarm Type");
+                throw new IllegalArgumentException("알람타입이 유효하지 않습니다.");
         }
     }
 

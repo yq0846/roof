@@ -1,8 +1,6 @@
 package com.side.jiboong.common.exception.advisor;
 
-import com.side.jiboong.common.exception.MailSendException;
-import com.side.jiboong.common.exception.NotFoundException;
-import com.side.jiboong.common.exception.UnauthorizedException;
+import com.side.jiboong.common.exception.*;
 import com.side.jiboong.presentation.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -57,7 +55,27 @@ public class RestControllerAdvisor extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(MailSendException.class)
     public ResponseEntity<ApiResponse<Void>> handleMailSendException(MailSendException e) {
-        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        return createResponseEntity(e, HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUserNotFoundException(UserNotFoundException e) {
+        return createResponseEntity(e, HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUserAlreadyExistsException(UserAlreadyExistsException e) {
+        return createResponseEntity(e, HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidVerificationCodeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidVerificationCodeException(InvalidVerificationCodeException e) {
+        return createResponseEntity(e, HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(InvalidResetCodeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidResetCodeException(InvalidResetCodeException e) {
+        return createResponseEntity(e, HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     private <T> ResponseEntity<T> createResponseEntity(Exception e, HttpStatusCode statusCode, String message) {

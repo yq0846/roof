@@ -41,7 +41,7 @@ public class AuthRestController {
             @RequestBody UserDto.EmailVerification emailVerification
     ) {
         userReadService.validateVerificationCode(emailVerification.username(), emailVerification.verificationCode());
-        return ResponseEntity.status(HttpStatus.OK).body("Email verified successfully");
+        return ResponseEntity.status(HttpStatus.OK).body("Email 인증 성공.");
     }
 
     @PostMapping("/signup")
@@ -52,7 +52,7 @@ public class AuthRestController {
             @RequestBody UserDto.Signup signup
     ) {
         userWriteService.join(signup.toUserJoin());
-        return ResponseEntity.status(HttpStatus.CREATED).body("User signed up successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입 성공.");
     }
 
     @PostMapping("/sign-in")
@@ -89,12 +89,14 @@ public class AuthRestController {
     }
 
     @PostMapping("/reset-password")
-    @Operation(summary = "비밀번호 재설정", description = "비밀번호를 재설정하고 DB에 재설정된 비밀번호로 변경합니다.")
+    @Operation(summary = "비밀번호 재설정", description = """
+        비밀번호를 재설정하고 DB에 재설정된 비밀번호로 변경합니다.
+    """)
     public ResponseEntity<String> resetPassword(
             @RequestParam("resetCode") String resetCode,
             @RequestBody UserDto.UpdateUserPasswordInfo info
     ) {
         userWriteService.resetPassword(resetCode, info.newPassword());
-        return ResponseEntity.status(HttpStatus.OK).body("Password reset is complete.");
+        return ResponseEntity.status(HttpStatus.OK).body("비밀번호 재설정 완료.");
     }
 }

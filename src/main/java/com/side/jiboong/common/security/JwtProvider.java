@@ -49,13 +49,13 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String accessToken, Function<String, UserAuth> func) throws AuthenticationException {
         if (!StringUtils.hasText(accessToken)) {
-            throw new AuthenticationException("Token is not provided") {};
+            throw new AuthenticationException("토큰이 제공되지 않았습니다.") {};
         }
 
         String username = redisCacheManager.getValue(accessToken);
 
         if (username == null || !Objects.equals(username, this.getUsername(accessToken))) {
-            throw new AuthenticationException("Invalid or expired token has been provided") {};
+            throw new AuthenticationException("유효하지 않거나 만료된 토큰입니다.") {};
         }
 
         UserAuth userAuth = func.apply(username);

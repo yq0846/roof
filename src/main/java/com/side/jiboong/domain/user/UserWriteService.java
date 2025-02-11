@@ -5,8 +5,7 @@ import com.side.jiboong.common.component.MailSender;
 import com.side.jiboong.common.component.RedisCacheManager;
 import com.side.jiboong.common.config.properties.ExpirationProperties;
 import com.side.jiboong.common.config.properties.JwtProperties;
-import com.side.jiboong.common.exception.UnauthorizedException;
-import com.side.jiboong.common.exception.UserAlreadyExistsException;
+import com.side.jiboong.common.exception.*;
 import com.side.jiboong.common.security.JwtProvider;
 import com.side.jiboong.common.security.UserAuth;
 import com.side.jiboong.domain.user.entity.User;
@@ -20,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
 
@@ -45,15 +43,15 @@ public class UserWriteService {
 
     public User join(UserJoin userJoin) {
         if (!isValidEmail(userJoin.username())) {
-            throw new IllegalArgumentException("invalid email");
+            throw new IllegalArgumentException("이메일이 유효하지 않습니다.");
         }
         if (!isValidPassword(userJoin.password())) {
-            throw new IllegalArgumentException("invalid password");
+            throw new IllegalArgumentException("비밀번호가 유효하지 않습니다.");
         }
 
         userRepository.findByUsername(userJoin.username())
                 .ifPresent((user) -> {
-                    throw new UserAlreadyExistsException("Username " + user.getUsername() + " already exists.");
+                    throw new UserAlreadyExistsException("이메일: " + user.getUsername() + " 이미 가입된 사용자입니다.");
                 });
 
         User newUser = userJoin.toUser(encoder::encode);
@@ -66,7 +64,7 @@ public class UserWriteService {
 
     public AuthenticationTokens signIn(SignInCredentials credentials) {
         userRepository.findByUsername(credentials.username())
-                .orElseThrow(() -> new NoSuchElementException("회원정보를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(credentials.username(), credentials.password());
         Authentication authenticate = authenticationManagerBuilder.getObject().authenticate(token); // UserDetailsService.loadUserByUsername() 호출
@@ -78,7 +76,7 @@ public class UserWriteService {
     public void sendPasswordResetCode(String username) {
 
         userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("회원정보를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         String resetCode = generateResetCode(username);
 
@@ -94,13 +92,13 @@ public class UserWriteService {
     public void resetPassword(String resetCode, String newPassword) {
         String email = redisCacheManager.getValue(resetCode);
         if (!StringUtils.hasText(email)) {
-            throw new NoSuchElementException("invalid reset code");
+            throw new InvalidResetCodeException("비밀번호 재설정 코드가 유효하지 않습니다.");
         }
 
         redisCacheManager.deleteValue(resetCode);
 
         User findUser = userRepository.findByUsername(email)
-                .orElseThrow(() -> new UsernameNotFoundException("user not found"));
+                .orElseThrow(UserNotFoundException::new);
 
         String encodedPassword = encoder.encode(newPassword);
 
@@ -110,17 +108,17 @@ public class UserWriteService {
 
     public AuthenticationTokens refreshToken(RefreshTokenRequest request) {
         if(!StringUtils.hasText(request.refreshToken())) {
-            throw new UnauthorizedException("Refresh token cannot be empty or null");
+            throw new UnauthorizedException("Refresh token 을 입력바랍니다.");
         }
 
         String storedUsername = redisCacheManager.getValue(request.refreshToken());
 
         if(storedUsername == null) {
-            throw new UnauthorizedException("Invalid or expired refresh token has been provided");
+            throw new UnauthorizedException("유효하지 않거나 만료된 Refresh token 토큰입니다.");
         }
 
         User user = userRepository.findByUsername(storedUsername)
-                .orElseThrow(() -> new NoSuchElementException("회원정보를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
         UserAuth userAuth = UserAuth.from(user);
 
         return createAuthToken(userAuth, user.getUsername());
@@ -169,7 +167,7 @@ public class UserWriteService {
         String storedVerificationCode = redisCacheManager.getValue("verification-code::" + email);
 
         if (!Objects.equals(storedVerificationCode, verificationCode)) {
-            throw new NoSuchElementException("Invalid or expired verification code");
+            throw new InvalidVerificationCodeException("유효하지 않거나 만료된 인증코드입니다.");
         }
 
         redisCacheManager.deleteValue("verification-code::" + email);

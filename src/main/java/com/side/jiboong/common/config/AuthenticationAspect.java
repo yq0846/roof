@@ -34,11 +34,11 @@ public class AuthenticationAspect {
 
     private void verify(Authentication authentication, UserRoleType userType) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new UnauthorizedException("Login required.");
+            throw new UnauthorizedException("로그인이 필요합니다.");
         }
 
         if (!hasRequiredAuthority(authentication, UserRoleType.ADMIN) && !hasRequiredAuthority(authentication, userType)) {
-            throw new AccessDeniedException("Forbidden: " + userType.getDescription() + " 접근 권한이 없습니다.");
+            throw new AccessDeniedException(userType.getDescription() + " 접근 권한이 없습니다.");
         }
     }
 

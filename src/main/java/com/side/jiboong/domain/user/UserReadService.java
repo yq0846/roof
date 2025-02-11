@@ -2,7 +2,10 @@ package com.side.jiboong.domain.user;
 
 import com.side.jiboong.common.annotation.ReadService;
 import com.side.jiboong.common.component.RedisCacheManager;
+import com.side.jiboong.common.exception.InvalidVerificationCodeException;
+import com.side.jiboong.common.exception.MailSendException;
 import com.side.jiboong.common.exception.UserAlreadyExistsException;
+import com.side.jiboong.common.exception.UserNotFoundException;
 import com.side.jiboong.common.security.UserAuth;
 import com.side.jiboong.domain.user.entity.User;
 import com.side.jiboong.infrastructure.user.UserRepository;
@@ -22,13 +25,13 @@ public class UserReadService {
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
     }
 
     public UserAuth getUserAuthByUsername(String username) {
         return userRepository.findByUsername(username)
                 .map(UserAuth::from)
-                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
     }
 
     public List<Long> getAllUserIdList() {
@@ -39,11 +42,11 @@ public class UserReadService {
 
     public void validateEmailDuplication(String email) {
         if (!StringUtils.hasText(email)) {
-            throw new UserAlreadyExistsException("email is invalid or already taken");
+            throw new MailSendException("이메일이 유효하지 않습니다.");
         }
 
         if (userRepository.existsByUsername(email.trim())) {
-            throw new UserAlreadyExistsException("email is invalid or already taken");
+            throw new UserAlreadyExistsException();
         }
     }
 
@@ -51,7 +54,7 @@ public class UserReadService {
         String storedVerificationCode = redisCacheManager.getValue("verification-code::" + email);
 
         if (!Objects.equals(storedVerificationCode, verificationCode)) {
-            throw new NoSuchElementException("invalid verification code");
+            throw new InvalidVerificationCodeException("유효하지 않은 인증코드입니다.");
         }
 
         redisCacheManager.setValue("verification-code::" + email, verificationCode, Duration.ofMinutes(30L));

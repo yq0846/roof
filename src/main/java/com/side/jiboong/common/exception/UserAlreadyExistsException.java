@@ -7,6 +7,6 @@ public class UserAlreadyExistsException extends RuntimeException {
     }
 
     public UserAlreadyExistsException() {
-        this("User already exists");
+        this("이미 가입된 사용자 입니다.");
     }
 }

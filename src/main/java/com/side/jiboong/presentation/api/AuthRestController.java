@@ -4,7 +4,6 @@ import com.side.jiboong.domain.user.UserReadService;
 import com.side.jiboong.domain.user.UserWriteService;
 import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
-import com.side.jiboong.domain.user.request.UserJoin;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
 import com.side.jiboong.presentation.dto.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +22,7 @@ public class AuthRestController {
     private final UserWriteService userWriteService;
 
     @Operation(summary = "회원가입 인증코드 발송", description = """
-        이메일로 인증코드를 발송합니다,
+        이메일로 인증코드를 발송합니다.
     """)
     @PostMapping("/signup/send-email")
     public ResponseEntity<Void> sendEmail(
@@ -35,7 +34,7 @@ public class AuthRestController {
     }
 
     @Operation(summary = "회원가입 인증코드 검증", description = """
-        인증코드가 올바른지 검증합니다,
+        인증코드가 올바른지 검증합니다.
     """)
     @PostMapping("/signup/verify-email")
     public ResponseEntity<String> verifyEmail(

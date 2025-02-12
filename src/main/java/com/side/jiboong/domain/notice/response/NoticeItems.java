@@ -12,6 +12,7 @@ public record NoticeItems(
         String title,
         NoticeCategory category,
         Long viewCount,
+        Long commentCount,
         ZonedDateTime createAt
 ) {
     public static NoticeItems from(Notice notice) {
@@ -20,6 +21,7 @@ public record NoticeItems(
                 .title(notice.getTitle())
                 .category(notice.getCategory())
                 .viewCount(notice.getViewCount())
+                .commentCount(notice.getComments() != null ? notice.getComments().size() : 0L)
                 .createAt(notice.getCreatedAt())
                 .build();
     }

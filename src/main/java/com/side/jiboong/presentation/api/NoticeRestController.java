@@ -3,7 +3,9 @@ package com.side.jiboong.presentation.api;
 import com.side.jiboong.common.annotation.Authenticated;
 import com.side.jiboong.common.component.FileManager;
 import com.side.jiboong.common.constant.FilePath;
+import com.side.jiboong.common.security.UserAuth;
 import com.side.jiboong.common.util.Page;
+import com.side.jiboong.domain.notice.NoticeCommentWriteService;
 import com.side.jiboong.domain.notice.NoticeReadService;
 import com.side.jiboong.domain.notice.NoticeWriteService;
 import com.side.jiboong.domain.notice.request.NoticeCondition;
@@ -22,6 +24,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,6 +38,7 @@ import java.util.List;
 public class NoticeRestController {
     private final NoticeReadService noticeReadService;
     private final NoticeWriteService noticeWriteService;
+    private final NoticeCommentWriteService noticeCommentWriteService;
     private final AlarmUseCase alarmUseCase;
     private final FileManager fileManager;
 
@@ -105,5 +109,27 @@ public class NoticeRestController {
         FileDto.FileResponse fileResponse = fileManager.saveFile(fileRequest);
 
         return ResponseEntity.status(HttpStatus.OK).body(fileResponse);
+    }
+
+    @Authenticated
+    @PostMapping("/comment")
+    @Operation(summary = "댓글 생성")
+    public ResponseEntity<Void> commentCreate(
+            @AuthenticationPrincipal UserAuth userAuth,
+            @RequestBody NoticeDto.CommentCreate create
+    ) {
+        noticeCommentWriteService.create(create.toNoticeCommentCreate(userAuth.getUserId()));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Authenticated
+    @PostMapping("/comment-delete")
+    @Operation(summary = "댓글 삭제")
+    public ResponseEntity<Void> commentDelete(
+            @AuthenticationPrincipal UserAuth userAuth,
+            @RequestBody NoticeDto.CommentDelete delete
+    ) {
+        noticeCommentWriteService.delete(userAuth.getUserId(), delete.id());
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

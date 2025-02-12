@@ -7,6 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "notices")
 @Getter
@@ -26,19 +29,24 @@ public class Notice extends BaseEntity {
 
     private Long viewCount;
 
+    @OneToMany(mappedBy = "notice")
+    private List<NoticeComment> comments = new ArrayList<>();
+
     @Builder
     public Notice(
             Long id,
             String title,
             String contents,
             NoticeCategory category,
-            Long viewCount
+            Long viewCount,
+            List<NoticeComment> comments
     ) {
         this.id = id;
         this.title = title;
         this.contents = contents;
         this.category = category;
         this.viewCount = viewCount;
+        this.comments = comments;
     }
 
     public void update(

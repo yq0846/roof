@@ -1,10 +1,12 @@
 package com.side.jiboong.presentation.dto;
 
 import com.side.jiboong.domain.notice.entity.NoticeCategory;
+import com.side.jiboong.domain.notice.request.NoticeCommentCreate;
 import com.side.jiboong.domain.notice.request.NoticeCreate;
+import com.side.jiboong.domain.notice.request.NoticeUpdate;
+import com.side.jiboong.domain.notice.response.NoticeCommentInfo;
 import com.side.jiboong.domain.notice.response.NoticeInfo;
 import com.side.jiboong.domain.notice.response.NoticeItems;
-import com.side.jiboong.domain.notice.request.NoticeUpdate;
 import lombok.Builder;
 
 import java.time.ZonedDateTime;
@@ -17,6 +19,7 @@ public class NoticeDto {
             String title,
             NoticeCategory category,
             Long viewCount,
+            Long commentCount,
             ZonedDateTime createAt
     ) {
         public static Items from(NoticeItems noticeItems) {
@@ -25,6 +28,7 @@ public class NoticeDto {
                     .title(noticeItems.title())
                     .category(noticeItems.category())
                     .viewCount(noticeItems.viewCount())
+                    .commentCount(noticeItems.commentCount())
                     .createAt(noticeItems.createAt())
                     .build();
         }
@@ -37,6 +41,7 @@ public class NoticeDto {
             String contents,
             NoticeCategory category,
             Long viewCount,
+            List<NoticeCommentInfo> comments,
             ZonedDateTime createAt,
             ZonedDateTime lastUpdatedAt
     ) {
@@ -47,6 +52,7 @@ public class NoticeDto {
                     .contents(info.contents())
                     .category(info.category())
                     .viewCount(info.viewCount())
+                    .comments(info.comments())
                     .createAt(info.createAt())
                     .lastUpdatedAt(info.lastUpdatedAt())
                     .build();
@@ -83,5 +89,22 @@ public class NoticeDto {
 
     public record Delete(
             List<Long> idList
+    ) {}
+
+    public record CommentCreate(
+            String comment,
+            Long noticeId
+    ) {
+        public NoticeCommentCreate toNoticeCommentCreate(Long userId) {
+            return NoticeCommentCreate.builder()
+                    .comment(this.comment)
+                    .noticeId(this.noticeId)
+                    .userId(userId)
+                    .build();
+        }
+    }
+
+    public record CommentDelete(
+            Long id
     ) {}
 }

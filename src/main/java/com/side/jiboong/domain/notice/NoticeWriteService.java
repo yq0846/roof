@@ -19,10 +19,11 @@ public class NoticeWriteService {
         return noticeRepository.save(create.toNotice());
     }
 
-    public void update(Long id, NoticeUpdate update) {
+    public Notice update(Long id, NoticeUpdate update) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다."));
         notice.update(update.title(), update.contents(), update.category());
+        return notice;
     }
 
     public void delete(List<Long> idList) {

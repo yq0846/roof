@@ -6,8 +6,10 @@ import com.side.jiboong.common.constant.FilePath;
 import com.side.jiboong.common.security.UserAuth;
 import com.side.jiboong.common.util.Page;
 import com.side.jiboong.domain.notice.NoticeCommentWriteService;
+import com.side.jiboong.domain.notice.NoticeFileWriteService;
 import com.side.jiboong.domain.notice.NoticeReadService;
 import com.side.jiboong.domain.notice.NoticeWriteService;
+import com.side.jiboong.domain.notice.entity.Notice;
 import com.side.jiboong.domain.notice.request.NoticeCondition;
 import com.side.jiboong.domain.notice.response.NoticeAlarm;
 import com.side.jiboong.domain.user.UserRoleType;
@@ -39,6 +41,7 @@ public class NoticeRestController {
     private final NoticeReadService noticeReadService;
     private final NoticeWriteService noticeWriteService;
     private final NoticeCommentWriteService noticeCommentWriteService;
+    private final NoticeFileWriteService noticeFileWriteService;
     private final AlarmUseCase alarmUseCase;
     private final FileManager fileManager;
 
@@ -73,8 +76,9 @@ public class NoticeRestController {
     @PostMapping
     @Operation(summary = "생성")
     public ResponseEntity<Void> create(@RequestBody NoticeDto.Create create) {
-        NoticeAlarm noticeAlarm = NoticeAlarm.from(noticeWriteService.create(create.toNoticeCreate()));
-        alarmUseCase.register(noticeAlarm, Duration.ofDays(3));
+        Notice notice = noticeWriteService.create(create.toNoticeCreate());
+        noticeFileWriteService.create(notice, create.toFileCreate());
+        alarmUseCase.register(NoticeAlarm.from(notice), Duration.ofDays(3));
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -85,7 +89,8 @@ public class NoticeRestController {
             @PathVariable("notice-id") Long id,
             @RequestBody NoticeDto.Update update
     ) {
-        noticeWriteService.update(id, update.toNoticeUpdate());
+        Notice notice = noticeWriteService.update(id, update.toNoticeUpdate());
+        noticeFileWriteService.update(notice, update.toFileUpdate());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -93,6 +98,7 @@ public class NoticeRestController {
     @PostMapping("/delete")
     @Operation(summary = "삭제")
     public ResponseEntity<Void> delete(@RequestBody NoticeDto.Delete delete) {
+        noticeFileWriteService.deleteAll(delete.idList());
         noticeWriteService.delete(delete.idList());
         return ResponseEntity.status(HttpStatus.OK).build();
     }

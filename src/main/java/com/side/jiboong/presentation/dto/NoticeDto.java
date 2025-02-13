@@ -1,9 +1,7 @@
 package com.side.jiboong.presentation.dto;
 
 import com.side.jiboong.domain.notice.entity.NoticeCategory;
-import com.side.jiboong.domain.notice.request.NoticeCommentCreate;
-import com.side.jiboong.domain.notice.request.NoticeCreate;
-import com.side.jiboong.domain.notice.request.NoticeUpdate;
+import com.side.jiboong.domain.notice.request.*;
 import com.side.jiboong.domain.notice.response.NoticeCommentInfo;
 import com.side.jiboong.domain.notice.response.NoticeInfo;
 import com.side.jiboong.domain.notice.response.NoticeItems;
@@ -62,7 +60,8 @@ public class NoticeDto {
     public record Create(
             String title,
             String contents,
-            NoticeCategory category
+            NoticeCategory category,
+            List<NoticeFileCreate> noticeFiles
     ) {
         public NoticeCreate toNoticeCreate() {
             return NoticeCreate.builder()
@@ -71,12 +70,17 @@ public class NoticeDto {
                     .category(this.category)
                     .build();
         }
+
+        public List<NoticeFileCreate> toFileCreate() {
+            return this.noticeFiles;
+        }
     }
 
     public record Update(
             String title,
             String contents,
-            NoticeCategory category
+            NoticeCategory category,
+            List<NoticeFileUpdate> noticeFiles
     ) {
         public NoticeUpdate toNoticeUpdate() {
             return NoticeUpdate.builder()
@@ -84,6 +88,10 @@ public class NoticeDto {
                     .contents(this.contents)
                     .category(this.category)
                     .build();
+        }
+
+        public List<NoticeFileUpdate> toFileUpdate() {
+            return this.noticeFiles;
         }
     }
 

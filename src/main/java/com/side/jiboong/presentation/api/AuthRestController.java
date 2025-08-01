@@ -5,6 +5,7 @@ import com.side.jiboong.domain.user.UserWriteService;
 import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
+import com.side.jiboong.domain.user.response.TokenValidationResult;
 import com.side.jiboong.presentation.dto.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -98,5 +99,16 @@ public class AuthRestController {
     ) {
         userWriteService.resetPassword(resetCode, info.newPassword());
         return ResponseEntity.status(HttpStatus.OK).body("비밀번호 재설정 완료.");
+    }
+
+    @PostMapping("/validate-token")
+    @Operation(summary = "토큰 검증", description = """
+        토큰의 유효성을 검증합니다.
+    """)
+    public ResponseEntity<TokenValidationResult> validateToken(
+            @RequestBody UserDto.TokenVerification token
+    ) {
+        TokenValidationResult result = userWriteService.validateToken(token.accessToken());
+        return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }

@@ -21,7 +21,7 @@ services:
     container_name: jiboong-redis
     restart: always
     ports:
-      - "17200:6379"
+      - "${REDIS_PORT}:6379"
     networks:
       - roof-network
     volumes:

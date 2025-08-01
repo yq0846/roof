@@ -13,11 +13,13 @@ import com.side.jiboong.domain.user.request.RefreshTokenRequest;
 import com.side.jiboong.domain.user.request.SignInCredentials;
 import com.side.jiboong.domain.user.request.UserJoin;
 import com.side.jiboong.domain.user.response.AuthenticationTokens;
+import com.side.jiboong.domain.user.response.TokenValidationResult;
 import com.side.jiboong.infrastructure.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.util.StringUtils;
@@ -43,10 +45,10 @@ public class UserWriteService {
 
     public User join(UserJoin userJoin) {
         if (!isValidEmail(userJoin.username())) {
-            throw new IllegalArgumentException("이메일이 유효하지 않습니다.");
+            throw new AuthArgumentException("이메일이 유효하지 않습니다.");
         }
         if (!isValidPassword(userJoin.password())) {
-            throw new IllegalArgumentException("비밀번호가 유효하지 않습니다.");
+            throw new AuthArgumentException("비밀번호가 유효하지 않습니다.");
         }
 
         userRepository.findByUsername(userJoin.username())
@@ -93,6 +95,9 @@ public class UserWriteService {
         String email = redisCacheManager.getValue(resetCode);
         if (!StringUtils.hasText(email)) {
             throw new InvalidResetCodeException("비밀번호 재설정 코드가 유효하지 않습니다.");
+        }
+        if (!isValidPassword(newPassword)) {
+            throw new AuthArgumentException("비밀번호가 유효하지 않습니다.");
         }
 
         redisCacheManager.deleteValue(resetCode);
@@ -161,6 +166,20 @@ public class UserWriteService {
                 "Verification Code",
                 verificationCode
         );
+    }
+
+    public TokenValidationResult validateToken(String accessToken) throws AuthenticationException {
+        if (!StringUtils.hasText(accessToken)) {
+            throw new AuthenticationException("토큰이 제공되지 않았습니다.") {};
+        }
+
+        String username = redisCacheManager.getValue(accessToken);
+
+        if (username == null || !Objects.equals(username, jwtProvider.getUsername(accessToken))) {
+            throw new AuthenticationException("유효하지 않거나 만료된 토큰입니다.") {};
+        }
+
+        return new TokenValidationResult(true, username);
     }
 
     private void deleteVerificationCode(String email, String verificationCode) {

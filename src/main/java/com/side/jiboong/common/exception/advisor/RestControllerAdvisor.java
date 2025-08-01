@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -76,6 +77,16 @@ public class RestControllerAdvisor extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidResetCodeException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidResetCodeException(InvalidResetCodeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(AuthArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthArgumentException(AuthArgumentException e) {
+        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler(MailException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMailException(MailException e) {
+        return createResponseEntity(e, HttpStatus.BAD_REQUEST, "MAIL " + e.getMessage());
     }
 
     private <T> ResponseEntity<T> createResponseEntity(Exception e, HttpStatusCode statusCode, String message) {

@@ -1,7 +1,11 @@
 package com.side.jiboong.presentation.dto;
 
 import com.side.jiboong.domain.user.request.UserJoin;
+import com.side.jiboong.domain.user.response.UserInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+
+import java.time.ZonedDateTime;
 
 public class UserDto {
     public record EmailInfo(
@@ -36,4 +40,19 @@ public class UserDto {
     public record TokenVerification(
             String accessToken
     ) {}
+
+    @Builder
+    public record Items(
+            String username,
+            ZonedDateTime lastLogin,
+            Integer loginCount
+    ) {
+        public static Items from(UserInfo userInfo) {
+            return Items.builder()
+                    .username(userInfo.username())
+                    .lastLogin(userInfo.lastLogin())
+                    .loginCount(userInfo.loginCount())
+                    .build();
+        }
+    }
 }

@@ -14,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -110,5 +112,14 @@ public class AuthRestController {
     ) {
         TokenValidationResult result = userWriteService.validateToken(token.accessToken());
         return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    @GetMapping("/all-user-list")
+    @Operation(summary = "유저 전체 조회")
+    public ResponseEntity<List<UserDto.Items>> getAllBy() {
+        List<UserDto.Items> users = userReadService.getAllUser().stream()
+                .map(UserDto.Items::from)
+                .toList();
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 }

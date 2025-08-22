@@ -8,13 +8,13 @@ import com.side.jiboong.common.exception.UserAlreadyExistsException;
 import com.side.jiboong.common.exception.UserNotFoundException;
 import com.side.jiboong.common.security.UserAuth;
 import com.side.jiboong.domain.user.entity.User;
+import com.side.jiboong.domain.user.response.UserInfo;
 import com.side.jiboong.infrastructure.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @ReadService
@@ -23,9 +23,10 @@ public class UserReadService {
     private final UserRepository userRepository;
     private final RedisCacheManager redisCacheManager;
 
-    public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(UserNotFoundException::new);
+    public List<UserInfo> getAllUser() {
+        return userRepository.findAll().stream()
+                .map(UserInfo::from)
+                .toList();
     }
 
     public UserAuth getUserAuthByUsername(String username) {
